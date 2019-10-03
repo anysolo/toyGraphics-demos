@@ -1,11 +1,12 @@
 // This game is deliberately written using minimal subset of Kotlin language
 // to be easily understandable for a beginner programmer.
 
-package demos
+package demos.zoombie
 
 import kotlin.math.*
 import kotlin.random.Random
 import com.anysolo.toyGraphics.*
+
 
 var gameIsOver = false
 
@@ -64,7 +65,7 @@ fun drawGun(gc: Graphics) {
     gc.color = Pal16.blue
     gc.setStrokeWidth(10)
 
-    gc.drawLine(0, gameAreaHeight-1, gunPointX.roundToInt(), (gameAreaHeight-1 - gunPointY).roundToInt())
+    gc.drawLine(0, gameAreaHeight -1, gunPointX.roundToInt(), (gameAreaHeight -1 - gunPointY).roundToInt())
 }
 
 fun turnTheGun(degreeDelta: Double) {
@@ -95,10 +96,10 @@ fun processKeyboard(keyboard: Keyboard) {
 
         when(key.code) {
             KeyCodes.LEFT ->
-                turnTheGun(+PI/180)
+                turnTheGun(+PI / 180)
 
             KeyCodes.RIGHT ->
-                turnTheGun(-PI/180)
+                turnTheGun(-PI / 180)
 
             KeyCodes.SPACE ->
                 if(!projectileFlying && blastCount == 0)
@@ -109,7 +110,7 @@ fun processKeyboard(keyboard: Keyboard) {
 
 fun endTheGame(gc: Graphics) {
     gameIsOver = true
-    gc.drawText(gameAreaWidth/3, gameAreaHeight/2, "Game is over.")
+    gc.drawText(gameAreaWidth /3, gameAreaHeight /2, "Game is over.")
 }
 
 fun killZombie() {
@@ -137,8 +138,8 @@ fun isBlastTouchedZombie() =
 
 fun isProjectileTouchedZombie() =
     projectileAltitude < zombieHeight &&
-    projectileDistance >= zombieDistance - zombieWidth/2 &&
-    projectileDistance < zombieDistance + zombieWidth/2
+    projectileDistance >= zombieDistance - zombieWidth /2 &&
+    projectileDistance < zombieDistance + zombieWidth /2
 
 
 fun drawScore(gc: Graphics) {
@@ -160,7 +161,7 @@ fun main() {
 
     turnTheGun(0.0)
 
-    zombieDistance = (gameAreaWidth-1).toDouble()
+    zombieDistance = (gameAreaWidth -1).toDouble()
 
     while(!gameIsOver) {
         processKeyboard(keyboard)

@@ -5,7 +5,7 @@ import com.anysolo.toyGraphics.*
 import kotlin.math.roundToInt
 
 
-fun main(args: Array<String>) {
+fun main() {
     val wnd = Window(800, 800)
     val gc = Graphics(wnd)
 
