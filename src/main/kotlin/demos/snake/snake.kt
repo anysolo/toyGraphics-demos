@@ -122,7 +122,7 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
             loopCounter++
             updateScore()
 
-            loopDelay = startingLoopDelay - score
+            loopDelay = startingLoopDelay - score*2
             if(loopDelay < 0)
                 loopDelay = 0
 
