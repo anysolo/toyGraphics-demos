@@ -51,12 +51,26 @@ class Board(val size: BoardPos) {
         Random.nextInt(0, size.x-1),
         Random.nextInt(0, size.y-1)
     )
+
+    fun didItTouchApple(pos: BoardPos): BoardPos? {
+        val posList = listOf(
+            pos,
+            pos + BoardPos(0, -1),
+            pos + BoardPos(1, 0),
+            pos + BoardPos(0, 1),
+            pos + BoardPos(-1, 0)
+        )
+
+        return posList.map { normalizeXY(it) }.
+                map { it to get(it) }.
+                firstOrNull() { it.second == BoardCell.apple } ?.first
+    }
 }
 
 
 class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
     private val wnd = Window(800, 800, background = Pal16.black, buffered = true)
-    private val board = Board(BoardPos(60, 60))
+    private val board = Board(BoardPos(40, 40))
     private val blockSize = Size(wnd.width/board.size.x, wnd.height/board.size.y)
     private val keyboard = Keyboard(wnd)
     private var speed = BoardPos(1, 0)
@@ -116,17 +130,23 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
             BoardCell.snakeCell -> {
                 gc.color = Pal16.blue
                 gc.drawRect(
-                        cellPixelPos.x + 1,
-                        cellPixelPos.y + 1,
-                        blockSize.width - 2,
-                        blockSize.height - 2,
-                        fill = true
+                    cellPixelPos.x + 1,
+                    cellPixelPos.y + 1,
+                    blockSize.width - 2,
+                    blockSize.height - 2,
+                    fill = true
                 )
             }
 
             BoardCell.apple -> {
                 gc.color = Pal16.red
-                gc.drawOval(cellPixelPos.x, cellPixelPos.y, blockSize.width, blockSize.height, fill = true)
+                gc.drawOval(
+                    cellPixelPos.x - blockSize.width,
+                    cellPixelPos.y - blockSize.width,
+                    blockSize.width*2,
+                    blockSize.height*2,
+                    fill = true
+                )
             }
 
             else -> {}
@@ -157,16 +177,17 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
     private fun movePython() {
         headPos = board.normalizeXY(headPos + speed)
 
-        when(board[headPos]) {
-            BoardCell.snakeCell ->
+        val applePos = board.didItTouchApple(headPos)
+
+        when {
+            board[headPos] == BoardCell.snakeCell ->
                 finishTheGame()
 
-            BoardCell.apple -> {
+            applePos != null -> {
+                board[applePos] = null
                 score++
                 createApples(1, headPos)
             }
-
-            null -> {}
         }
 
         board[headPos] = BoardCell.snakeCell
@@ -188,7 +209,11 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
         repeat(amount) {
             while(true) {
                 val boardPos = board.randomPos()
+
                 if(excludePos != null && boardPos == excludePos)
+                    continue
+
+                if(board[boardPos] == BoardCell.snakeCell)
                     continue
 
                 board[boardPos] = BoardCell.apple
@@ -200,6 +225,6 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
 
 
 fun main() {
-    val game = SnakeGame(amountOfApples = 3, startingLoopDelay = 100)
+    val game = SnakeGame(amountOfApples = 3, startingLoopDelay = 150)
     game.run()
 }
