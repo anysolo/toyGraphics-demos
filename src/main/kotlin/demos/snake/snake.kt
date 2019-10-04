@@ -1,6 +1,7 @@
 package demos.snake
 
 import com.anysolo.toyGraphics.*
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 
@@ -54,14 +55,18 @@ class Board(val size: BoardPos) {
 
     fun didItTouchApple(pos: BoardPos): BoardPos? {
         val posList = listOf(
-            pos,
-            pos + BoardPos(0, -1),
-            pos + BoardPos(1, 0),
-            pos + BoardPos(0, 1),
-            pos + BoardPos(-1, 0)
+            BoardPos(0, 0),
+            BoardPos(0, -1),
+            BoardPos(1, -1),
+            BoardPos(1, 0),
+            BoardPos(1, 1),
+            BoardPos(0, 1),
+            BoardPos(-1, 1),
+            BoardPos(-1, 0),
+            BoardPos(-1, -1)
         )
 
-        return posList.map { normalizeXY(it) }.
+        return posList.map { normalizeXY(pos + it) }.
                 map { it to get(it) }.
                 firstOrNull() { it.second == BoardCell.apple } ?.first
     }
@@ -69,9 +74,19 @@ class Board(val size: BoardPos) {
 
 
 class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
-    private val wnd = Window(800, 800, background = Pal16.black, buffered = true)
-    private val board = Board(BoardPos(40, 40))
-    private val blockSize = Size(wnd.width/board.size.x, wnd.height/board.size.y)
+    companion object {
+        const val gameAreaSize = 800
+        const val infoPanWidth = 300
+        const val boardSize = 60
+    }
+
+    private val wnd = Window(
+        gameAreaSize + infoPanWidth, gameAreaSize,
+        background = Pal16.black, buffered = true
+    )
+
+    private val board = Board(BoardPos(boardSize, boardSize))
+    private val blockSize = Size(gameAreaSize/board.size.x, gameAreaSize/board.size.y)
     private val keyboard = Keyboard(wnd)
     private var speed = BoardPos(1, 0)
     private var headPos = BoardPos(0, board.size.y / 2)
@@ -80,12 +95,19 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
     private var score = 0
     private var loopDelay = startingLoopDelay
     private val body = mutableListOf<BoardPos>()
+    private var gameStartTime: Long = 0
+    private var appleCount = 0
 
     fun run() {
         board.clear()
         createApples(amountOfApples)
+        appleCount = 0
+        score = 0
+        gameStartTime = System.currentTimeMillis()
         gameLoop()
     }
+
+    fun getGameTime() = System.currentTimeMillis() - gameStartTime
 
     private fun gameLoop() {
         while(true) {
@@ -95,20 +117,21 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
                 continue
 
             movePython()
-            drawBoard()
+            draw()
 
             loopCounter++
+            updateScore()
 
-            if(score < startingLoopDelay)
-                loopDelay = startingLoopDelay - score
+            loopDelay = startingLoopDelay - score
+            if(loopDelay < 0)
+                loopDelay = 0
 
             sleep(loopDelay)
         }
     }
 
-    private fun drawBoard() {
+    private fun draw() {
         Graphics(wnd).use { gc ->
-            gc.setFontSize(48)
             gc.clear()
 
             board.forEach {pos: BoardPos, value -> drawBlock(gc, pos, value) }
@@ -118,8 +141,7 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
                 gc.drawText(wnd.width / 3, wnd.height / 2, "Game Over")
             }
 
-            gc.color = Pal16.cyan
-            gc.drawText(wnd.width-100, wnd.height-50, score.toString())
+            drawInfoPan(gc)
         }
     }
 
@@ -151,6 +173,28 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
 
             else -> {}
         }
+    }
+
+    private fun drawInfoPan(gc: Graphics) {
+        gc.color = Pal16.white
+        gc.drawLine(gameAreaSize, 0, gameAreaSize, wnd.height-1)
+
+        val x = gameAreaSize + gameAreaSize/20
+        val ystep = 50
+
+        var y = 50
+
+        gc.setFontSize(32)
+        gc.color = Pal16.cyan
+
+        gc.drawText(x, y, "Score: $score")
+        y += ystep
+
+        gc.drawText(x, y, "Apples: $appleCount")
+        y += ystep
+
+        val time = (getGameTime() / 1000.0).toDouble().format(1)
+        gc.drawText(x, y, "Time: ${time} s")
     }
 
     private fun processKeyboard() {
@@ -185,7 +229,7 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
 
             applePos != null -> {
                 board[applePos] = null
-                score++
+                appleCount++
                 createApples(1, headPos)
             }
         }
@@ -193,7 +237,7 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
         board[headPos] = BoardCell.snakeCell
 
         body.add(headPos)
-        val maxLen = 5 + score
+        val maxLen = 5 + appleCount
 
         if(body.size >  maxLen) {
             board[body[0]] = null
@@ -220,6 +264,11 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
                 break
             }
         }
+    }
+
+    private fun updateScore() {
+        if(getGameTime() > 0.0)
+            score = appleCount + (appleCount.toDouble() / (getGameTime()/10000.0)).roundToInt()
     }
 }
 
