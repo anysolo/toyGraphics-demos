@@ -122,7 +122,7 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
             loopCounter++
             updateScore()
 
-            loopDelay = startingLoopDelay - score
+            loopDelay = startingLoopDelay - score/2
             if(loopDelay < 0)
                 loopDelay = 0
 
@@ -151,7 +151,7 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
 
         when(value) {
             BoardCell.snakeCell -> {
-                gc.color = Pal16.blue
+                gc.color = if(pos == headPos) Pal16.brightYellow else Pal16.green
                 gc.drawRect(
                     cellPixelPos.x + 1,
                     cellPixelPos.y + 1,
