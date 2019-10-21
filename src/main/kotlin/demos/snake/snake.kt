@@ -76,7 +76,7 @@ class Board(val size: BoardPos) {
 class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
     companion object {
         const val gameAreaSize = 800
-        const val infoPanWidth = 300
+        const val infoPanWidth = 200
         const val boardSize = 60
     }
 
@@ -180,12 +180,12 @@ class SnakeGame(val amountOfApples: Int, val startingLoopDelay: Int) {
         gc.color = Pal16.white
         gc.drawLine(gameAreaSize, 0, gameAreaSize, wnd.height-1)
 
-        val x = gameAreaSize + gameAreaSize/20
+        val x = gameAreaSize + gameAreaSize/60
         val ystep = 50
 
         var y = 50
 
-        gc.setFontSize(32)
+        gc.setFontSize(28)
         gc.color = Pal16.cyan
 
         gc.drawText(x, y, "Score: $score")
