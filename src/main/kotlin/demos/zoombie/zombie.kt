@@ -1,20 +1,21 @@
-// This game is deliberately written using minimal subset of Kotlin language
-// to be easily understandable for a beginner programmer.
-
 package demos.zoombie
 
-import kotlin.math.*
-import kotlin.random.Random
+import kotlin.math.cos
+import kotlin.math.sin
+
 import com.anysolo.toyGraphics.*
+import kotlin.math.PI
+import kotlin.math.roundToInt
+import kotlin.random.Random
 
 
 var gameIsOver = false
 
-val timeStep = 0.01
+val timeStep = 0.1
 val g = 9.81
 
 var time = 0.0
-val loopSleep = 2
+val loopSleep = 20
 val gunLength = 50
 var gunAngle = PI / 4
 var gunPointX = 0.0
@@ -34,12 +35,11 @@ var gameAreaHeight = 0
 var gameAreaWidth = 0
 
 var zombieDistance = 0.0
-var zombieSpeed = 0.1
+var zombieSpeed = 10.0
 val zombieHeight = 140
 val zombieWidth = 110
 var zombieIsDying = false
 
-var blastCount = 0
 val blastRadius = 30.0
 var blastAltitude = 0.0
 
@@ -90,19 +90,19 @@ fun fireTheGun() {
     projectileDistance = gunPointX
 }
 
-fun processKeyboard(keyboard: Keyboard) {
+fun processKeyboard(keyboard: Keyboard, blastAnimation: Animation) {
     while (true) {
         val key = keyboard.getPressedKey() ?: break
 
         when(key.code) {
             KeyCodes.LEFT ->
-                turnTheGun(+PI / 180)
+                turnTheGun(+PI/180)
 
             KeyCodes.RIGHT ->
-                turnTheGun(-PI / 180)
+                turnTheGun(-PI/180)
 
             KeyCodes.SPACE ->
-                if(!projectileFlying && blastCount == 0)
+                if(!projectileFlying && !blastAnimation.isPlaying)
                     fireTheGun()
         }
     }
@@ -113,10 +113,12 @@ fun endTheGame(gc: Graphics) {
     gc.drawText(gameAreaWidth /3, gameAreaHeight /2, "Game is over.")
 }
 
-fun killZombie() {
+fun killZombie(zombieAnimation: Animation) {
     zombieDistance = gameAreaWidth.toDouble() - 1
-    zombieSpeed += 0.04
+    zombieSpeed *= 1.1
+
     zombieIsDying = false
+    zombieAnimation.start()
 
     score += 10 + blastAltitude * 0.3 / (gameAreaWidth / zombieDistance)
 }
@@ -125,21 +127,27 @@ fun calculateZombie() {
     if(zombieIsDying)
         return
 
-    zombieDistance -= if(Random.nextDouble(500.0 / zombieSpeed) < 0.1)
-        zombieSpeed * 500
+    val probability = Random.nextDouble(500.0 / (zombieSpeed * timeStep))
+
+    val actualSpeed = if(probability < 0.25) {
+        println("Jump: $probability")
+        zombieSpeed * 100
+    }
     else
         zombieSpeed
+
+    zombieDistance -= actualSpeed * timeStep
 }
 
 fun isBlastTouchedZombie() =
-    zombieDistance >= projectileDistance - blastRadius &&
-    zombieDistance < projectileDistance + blastRadius
+        zombieDistance >= projectileDistance - blastRadius &&
+                zombieDistance < projectileDistance + blastRadius
 
 
 fun isProjectileTouchedZombie() =
-    projectileAltitude < zombieHeight &&
-    projectileDistance >= zombieDistance - zombieWidth /2 &&
-    projectileDistance < zombieDistance + zombieWidth /2
+        projectileAltitude < zombieHeight &&
+                projectileDistance >= zombieDistance - zombieWidth /2 &&
+                projectileDistance < zombieDistance + zombieWidth /2
 
 
 fun drawScore(gc: Graphics) {
@@ -156,15 +164,15 @@ fun main() {
 
     val keyboard = Keyboard(wnd)
 
-    val zombieImage = Image("graphicsFiles/zombie.gif")
-    val blastImage = Image("graphicsFiles/blast.gif")
+    val zombieAnimation = Animation("graphicsFiles/zombie.gif", delay = 100, autoStart = true, loop = true)
+    val blastAnimation = Animation("graphicsFiles/blast.gif", delay = 25)
 
     turnTheGun(0.0)
 
     zombieDistance = (gameAreaWidth -1).toDouble()
 
     while(!gameIsOver) {
-        processKeyboard(keyboard)
+        processKeyboard(keyboard, blastAnimation)
 
         Graphics(wnd).use { gc ->
             gc.clear()
@@ -176,7 +184,7 @@ fun main() {
                 if (projectileAltitude <= 0 || isProjectileTouchedZombie()) {
                     score -= 5
 
-                    blastCount = 435
+                    blastAnimation.start()
                     projectileFlying = false
 
                     if (isProjectileTouchedZombie()) {
@@ -194,24 +202,21 @@ fun main() {
             drawScore(gc)
             drawGun(gc)
 
-            if (blastCount != 0) {
-                gc.drawImage(
-                        (projectileDistance - blastImage.width / 2).roundToInt(),
-                        (gameAreaHeight - 1 - blastAltitude - blastImage.height / 2).roundToInt(),
-                        blastImage
+            if (blastAnimation.isPlaying) {
+                gc.drawAnimation(
+                        (projectileDistance - blastAnimation.width / 2).roundToInt(),
+                        (gameAreaHeight - 1 - blastAltitude - blastAnimation.height / 2).roundToInt(),
+                        blastAnimation
                 )
-
-                blastCount--
-
-                if (blastCount == 0 && zombieIsDying)
-                    killZombie()
             }
+            else if (zombieIsDying)
+                killZombie(zombieAnimation)
 
             if (zombieDistance != 0.0) {
-                gc.drawImage(
-                        (zombieDistance - zombieImage.width / 2).roundToInt(),
-                        gameAreaHeight - zombieImage.height - 1,
-                        zombieImage
+                gc.drawAnimation(
+                        (zombieDistance - zombieAnimation.width / 2).roundToInt(),
+                        gameAreaHeight - zombieAnimation.height - 1,
+                        zombieAnimation
                 )
 
                 if (!zombieIsDying) {
@@ -227,5 +232,6 @@ fun main() {
         score += timeStep / 100
 
         sleep(loopSleep)
+        AnimationManager.update()
     }
 }

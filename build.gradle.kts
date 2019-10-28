@@ -23,5 +23,5 @@ dependencies {
     compile(kotlin("stdlib"))
     compile(kotlin("stdlib-jdk8"))
     compile(kotlin("reflect"))
-    compile("com.anysolo:toyGraphics:0.7.2")
+    compile("com.anysolo:toyGraphics:0.8.0")
 }
