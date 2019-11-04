@@ -25,10 +25,10 @@ fun main() {
             val key = keyboard.getPressedKey() ?: break
 
             when(key.code) {
-                KeyCodes.LEFT -> speedX -= speedStepX
-                KeyCodes.RIGHT -> speedX += speedStepX
-                KeyCodes.UP -> speedY -= speedStepY
-                KeyCodes.DOWN -> speedY += speedStepY
+                KeyCodes.LEFT ->    speedX -= speedStepX
+                KeyCodes.RIGHT ->   speedX += speedStepX
+                KeyCodes.UP ->      speedY -= speedStepY
+                KeyCodes.DOWN ->    speedY += speedStepY
             }
         }
 
