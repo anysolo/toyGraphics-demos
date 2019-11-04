@@ -5,7 +5,8 @@ import com.anysolo.toyGraphics.*
 
 fun main() {
     val wnd = Window(500, 200, buffered = true)
-    val animation = Animation("graphicsFiles/zombie.gif", delay = 100, autoStart = true, loop = true)
+    val animationFrames = AnimationFrames.loadFromAnimatedGif("graphicsFiles/zombie.gif")
+    val animation = Animation(animationFrames, delay = 100, autoStart = true, loop = true)
 
     var x = wnd.width - animation.width
     val y = wnd.height - animation.height

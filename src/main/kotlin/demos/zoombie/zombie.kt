@@ -164,8 +164,11 @@ fun main() {
 
     val keyboard = Keyboard(wnd)
 
-    val zombieAnimation = Animation("graphicsFiles/zombie.gif", delay = 100, autoStart = true, loop = true)
-    val blastAnimation = Animation("graphicsFiles/blast.gif", delay = 25)
+    val zombieFrames = AnimationFrames.loadFromAnimatedGif("graphicsFiles/zombie.gif")
+    val zombieAnimation = Animation(zombieFrames, delay = 100, autoStart = true, loop = true)
+
+    val blastFrames = AnimationFrames.loadFromAnimatedGif("graphicsFiles/blast.gif")
+    val blastAnimation = Animation(blastFrames, delay = 25)
 
     turnTheGun(0.0)
 
