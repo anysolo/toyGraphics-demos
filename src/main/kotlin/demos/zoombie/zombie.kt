@@ -102,7 +102,7 @@ fun processKeyboard(keyboard: Keyboard, blastAnimation: Animation) {
                 turnTheGun(-PI/180)
 
             KeyCodes.SPACE ->
-                if(!projectileFlying && !blastAnimation.isPlaying)
+                if(!projectileFlying && !blastAnimation.isRunning)
                     fireTheGun()
         }
     }
@@ -118,7 +118,7 @@ fun killZombie(zombieAnimation: Animation) {
     zombieSpeed *= 1.1
 
     zombieIsDying = false
-    zombieAnimation.start()
+    zombieAnimation.restart()
 
     score += 10 + blastAltitude * 0.3 / (gameAreaWidth / zombieDistance)
 }
@@ -164,8 +164,10 @@ fun main() {
 
     val keyboard = Keyboard(wnd)
 
+    val animationManager = AnimationManager()
     val zombieFrames = AnimationFrames.loadFromAnimatedGif("graphicsFiles/zombie.gif")
-    val zombieAnimation = Animation(zombieFrames, delay = 100, autoStart = true, loop = true)
+    val zombieAnimation = Animation(zombieFrames, delay = 100, loop = true)
+    zombieAnimation.start(animationManager)
 
     val blastFrames = AnimationFrames.loadFromAnimatedGif("graphicsFiles/blast.gif")
     val blastAnimation = Animation(blastFrames, delay = 25)
@@ -187,7 +189,7 @@ fun main() {
                 if (projectileAltitude <= 0 || isProjectileTouchedZombie()) {
                     score -= 5
 
-                    blastAnimation.start()
+                    blastAnimation.start(animationManager)
                     projectileFlying = false
 
                     if (isProjectileTouchedZombie()) {
@@ -205,7 +207,7 @@ fun main() {
             drawScore(gc)
             drawGun(gc)
 
-            if (blastAnimation.isPlaying) {
+            if (blastAnimation.isRunning) {
                 gc.drawAnimation(
                         (projectileDistance - blastAnimation.width / 2).roundToInt(),
                         (gameAreaHeight - 1 - blastAltitude - blastAnimation.height / 2).roundToInt(),
@@ -235,6 +237,6 @@ fun main() {
         score += timeStep / 100
 
         sleep(loopSleep)
-        AnimationManager.update()
+        animationManager.update()
     }
 }
