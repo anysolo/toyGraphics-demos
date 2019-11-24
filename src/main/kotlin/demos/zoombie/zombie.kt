@@ -46,6 +46,9 @@ var blastAltitude = 0.0
 var score = 0.0
 
 
+val animationManager = AnimationManager()
+
+
 fun drawProjectile(gc: Graphics) {
     val x = projectileDistance
     val y = gc.window.height - projectileAltitude
@@ -128,26 +131,20 @@ fun calculateZombie() {
         return
 
     val probability = Random.nextDouble(500.0 / (zombieSpeed * timeStep))
-
-    val actualSpeed = if(probability < 0.25) {
-        println("Jump: $probability")
-        zombieSpeed * 100
-    }
-    else
-        zombieSpeed
+    val actualSpeed = if(probability < 0.25) zombieSpeed * 100 else zombieSpeed
 
     zombieDistance -= actualSpeed * timeStep
 }
 
 fun isBlastTouchedZombie() =
-        zombieDistance >= projectileDistance - blastRadius &&
-                zombieDistance < projectileDistance + blastRadius
+    zombieDistance >= projectileDistance - blastRadius &&
+    zombieDistance < projectileDistance + blastRadius
 
 
 fun isProjectileTouchedZombie() =
-        projectileAltitude < zombieHeight &&
-                projectileDistance >= zombieDistance - zombieWidth /2 &&
-                projectileDistance < zombieDistance + zombieWidth /2
+    projectileAltitude < zombieHeight &&
+    projectileDistance >= zombieDistance - zombieWidth /2 &&
+    projectileDistance < zombieDistance + zombieWidth /2
 
 
 fun drawScore(gc: Graphics) {
@@ -155,6 +152,7 @@ fun drawScore(gc: Graphics) {
     gc.color = Pal16.green
     gc.drawText(10, 40, "Score: " + score.format(2))
 }
+
 
 fun main() {
     val wnd = Window(1920, 1080, background = Pal16.black, buffered = true)
@@ -209,9 +207,9 @@ fun main() {
 
             if (blastAnimation.isRunning) {
                 gc.drawAnimation(
-                        (projectileDistance - blastAnimation.width / 2).roundToInt(),
-                        (gameAreaHeight - 1 - blastAltitude - blastAnimation.height / 2).roundToInt(),
-                        blastAnimation
+                    (projectileDistance - blastAnimation.width / 2).roundToInt(),
+                    (gameAreaHeight - 1 - blastAltitude - blastAnimation.height / 2).roundToInt(),
+                    blastAnimation
                 )
             }
             else if (zombieIsDying)
