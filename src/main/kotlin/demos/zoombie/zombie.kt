@@ -46,6 +46,9 @@ var blastAltitude = 0.0
 var score = 0.0
 
 
+val animationManager = AnimationManager()
+
+
 fun drawProjectile(gc: Graphics) {
     val x = projectileDistance
     val y = gc.window.height - projectileAltitude
@@ -102,7 +105,7 @@ fun processKeyboard(keyboard: Keyboard, blastAnimation: Animation) {
                 turnTheGun(-PI/180)
 
             KeyCodes.SPACE ->
-                if(!projectileFlying && !blastAnimation.isPlaying)
+                if(!projectileFlying && !blastAnimation.isRunning)
                     fireTheGun()
         }
     }
@@ -118,7 +121,7 @@ fun killZombie(zombieAnimation: Animation) {
     zombieSpeed *= 1.1
 
     zombieIsDying = false
-    zombieAnimation.start()
+    zombieAnimation.restart()
 
     score += 10 + blastAltitude * 0.3 / (gameAreaWidth / zombieDistance)
 }
@@ -128,26 +131,20 @@ fun calculateZombie() {
         return
 
     val probability = Random.nextDouble(500.0 / (zombieSpeed * timeStep))
-
-    val actualSpeed = if(probability < 0.25) {
-        println("Jump: $probability")
-        zombieSpeed * 100
-    }
-    else
-        zombieSpeed
+    val actualSpeed = if(probability < 0.25) zombieSpeed * 100 else zombieSpeed
 
     zombieDistance -= actualSpeed * timeStep
 }
 
 fun isBlastTouchedZombie() =
-        zombieDistance >= projectileDistance - blastRadius &&
-                zombieDistance < projectileDistance + blastRadius
+    zombieDistance >= projectileDistance - blastRadius &&
+    zombieDistance < projectileDistance + blastRadius
 
 
 fun isProjectileTouchedZombie() =
-        projectileAltitude < zombieHeight &&
-                projectileDistance >= zombieDistance - zombieWidth /2 &&
-                projectileDistance < zombieDistance + zombieWidth /2
+    projectileAltitude < zombieHeight &&
+    projectileDistance >= zombieDistance - zombieWidth /2 &&
+    projectileDistance < zombieDistance + zombieWidth /2
 
 
 fun drawScore(gc: Graphics) {
@@ -155,6 +152,7 @@ fun drawScore(gc: Graphics) {
     gc.color = Pal16.green
     gc.drawText(10, 40, "Score: " + score.format(2))
 }
+
 
 fun main() {
     val wnd = Window(1920, 1080, background = Pal16.black, buffered = true)
@@ -165,7 +163,8 @@ fun main() {
     val keyboard = Keyboard(wnd)
 
     val zombieFrames = AnimationFrames.loadFromAnimatedGif("graphicsFiles/zombie.gif")
-    val zombieAnimation = Animation(zombieFrames, delay = 100, autoStart = true, loop = true)
+    val zombieAnimation = Animation(zombieFrames, delay = 100, loop = true)
+    zombieAnimation.start(animationManager)
 
     val blastFrames = AnimationFrames.loadFromAnimatedGif("graphicsFiles/blast.gif")
     val blastAnimation = Animation(blastFrames, delay = 25)
@@ -187,7 +186,7 @@ fun main() {
                 if (projectileAltitude <= 0 || isProjectileTouchedZombie()) {
                     score -= 5
 
-                    blastAnimation.start()
+                    blastAnimation.start(animationManager)
                     projectileFlying = false
 
                     if (isProjectileTouchedZombie()) {
@@ -205,11 +204,11 @@ fun main() {
             drawScore(gc)
             drawGun(gc)
 
-            if (blastAnimation.isPlaying) {
+            if (blastAnimation.isRunning) {
                 gc.drawAnimation(
-                        (projectileDistance - blastAnimation.width / 2).roundToInt(),
-                        (gameAreaHeight - 1 - blastAltitude - blastAnimation.height / 2).roundToInt(),
-                        blastAnimation
+                    (projectileDistance - blastAnimation.width / 2).roundToInt(),
+                    (gameAreaHeight - 1 - blastAltitude - blastAnimation.height / 2).roundToInt(),
+                    blastAnimation
                 )
             }
             else if (zombieIsDying)
@@ -235,6 +234,6 @@ fun main() {
         score += timeStep / 100
 
         sleep(loopSleep)
-        AnimationManager.update()
+        animationManager.update()
     }
 }
