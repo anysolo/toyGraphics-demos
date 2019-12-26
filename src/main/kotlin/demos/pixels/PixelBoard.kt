@@ -2,35 +2,50 @@ package demos.pixels
 
 import com.anysolo.toyGraphics.Color
 import com.anysolo.toyGraphics.Graphics
+import demos.snake.BoardPos
 
 
-class PixelBoard(val boardSize: Int, val pixelSize: Int) {
+data class Pos(val x: Int, val y: Int) {
+    fun move(x: Int, y: Int) = Pos(this.x + x, this.y + y)
+}
+
+
+class PixelBoard(val boardSize: Int) {
     private val pixels = Array<Color?> (boardSize * boardSize) {null}
 
-    fun getPixel(x: Int, y: Int): Color? {
-        assert(x in 0 until boardSize)
-        assert(y in 0 until boardSize)
+    operator fun get(pos: Pos): Color? {
+        assert(pos.x in 0 until boardSize)
+        assert(pos.y in 0 until boardSize)
 
-        return pixels[y * boardSize + x]
+        return pixels[pos.y * boardSize + pos.x]
     }
 
-    fun setPixel(x: Int, y: Int, color: Color?) {
-        assert(x in 0 until boardSize)
-        assert(y in 0 until boardSize)
+    operator fun set(pos: Pos, color: Color?) {
+        assert(pos.x in 0 until boardSize)
+        assert(pos.y in 0 until boardSize)
 
-        pixels[y * boardSize + x] = color
+        pixels[pos.y * boardSize + pos.x] = color
     }
 
-    fun draw(g: Graphics) {
-        for( y in 0 until boardSize) {
-            for( x in 0 until boardSize) {
-                val pixelColor = getPixel(x, y)
+    fun clear() = pixels.fill(null)
 
-                if(pixelColor != null) {
-                    g.color = pixelColor
-                    g.drawRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize, fill = true)
-                }
+    fun forEach(block: (pos: Pos, color: Color?) -> Unit) {
+        for (y in 0 until boardSize) {
+            for (x in 0 until boardSize) {
+                val pos = Pos(x, y)
+                block(pos, get(pos))
             }
         }
     }
+
+    private fun normalizeCoord(coord: Int, coordSize: Int) = when {
+        coord < 0 -> coord + coordSize
+        coord >= coordSize -> coord - coordSize
+        else -> coord
+    }
+
+    fun normalizePos(pos: Pos) = Pos(
+        normalizeCoord(pos.x, boardSize),
+        normalizeCoord(pos.y, boardSize)
+    )
 }
