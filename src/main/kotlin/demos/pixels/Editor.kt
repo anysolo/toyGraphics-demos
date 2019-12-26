@@ -15,6 +15,7 @@ class Editor(width: Int, height: Int) {
     private val boardWidth = pixelBoardSize * pixelSize
     private var cursorPos = Pos(0, 0)
     private var currentColorIndex = 0
+    private var savedPos = Pos(0, 0)
 
     private val currentColor: Color
         get() = Pal16[currentColorIndex]
@@ -53,21 +54,32 @@ class Editor(width: Int, height: Int) {
         g.drawLine(x, 0, x, window.height-1)
     }
 
-    private fun nextColor(delta: Int) {
-        currentColorIndex += delta
+    private fun nextColor(forward: Boolean) {
+        currentColorIndex += if(forward) 1 else -1
 
         if(currentColorIndex < 0)
-            currentColorIndex = Pal16.size - currentColorIndex
-        else if(currentColorIndex > Pal16.size)
+            currentColorIndex = Pal16.size + currentColorIndex
+        else if(currentColorIndex >= Pal16.size)
             currentColorIndex = currentColorIndex - Pal16.size
     }
 
     private fun drawInfoPanel(g: Graphics) {
+        val left = boardWidth + 10
+        var top = 10
+
         g.color = Pal16.black
         g.drawLine(boardWidth, 0, boardWidth, window.height)
 
         g.color = currentColor
-        g.drawRect(boardWidth + 10, 10, 50, 50, fill = true)
+        g.drawRect(left, top, 50, 50, fill = true)
+        top += 100
+
+        g.color = Pal16.black
+        g.setFontSize(20)
+        g.drawText(left, top, "current pos: $cursorPos")
+        top += 40
+
+        g.drawText(left, top, "saved pos: $savedPos")
     }
 
     fun processKeyboard() {
@@ -79,8 +91,9 @@ class Editor(width: Int, height: Int) {
                 KeyCodes.RIGHT -> cursorPos = cursorPos.move(1, 0)
                 KeyCodes.UP -> cursorPos = cursorPos.move(0, -1)
                 KeyCodes.DOWN -> cursorPos = cursorPos.move(0, 1)
-                'C'.toInt() -> if(key.isAlt) nextColor(-1) else nextColor(1)
+                'C'.toInt() ->  nextColor(!key.isAlt)
                 'D'.toInt() -> board[cursorPos] = currentColor
+                'P'.toInt() -> savedPos = cursorPos
             }
 
             cursorPos = board.normalizePos(cursorPos)
