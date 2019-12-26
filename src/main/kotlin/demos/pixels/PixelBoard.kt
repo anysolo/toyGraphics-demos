@@ -28,7 +28,7 @@ class PixelBoard(val boardSize: Int, val pixelSize: Int) {
 
                 if(pixelColor != null) {
                     g.color = pixelColor
-                    g.drawRect(x, y, pixelSize, pixelSize, fill = true)
+                    g.drawRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize, fill = true)
                 }
             }
         }

@@ -14,6 +14,11 @@ enum class BoardCell {
     apple
 }
 
+data class Point(val x: Int, val y: Int)
+
+data class Size(val width: Int, val height: Int)
+
+
 class Board(val size: BoardPos) {
     private val board: Array<Array<BoardCell?>> =
         (0 until size.y).map {

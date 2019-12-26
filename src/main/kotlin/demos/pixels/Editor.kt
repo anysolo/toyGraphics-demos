@@ -1,9 +1,6 @@
 package demos.pixels
 
-import com.anysolo.toyGraphics.Graphics
-import com.anysolo.toyGraphics.Keyboard
-import com.anysolo.toyGraphics.Window
-import com.anysolo.toyGraphics.sleep
+import com.anysolo.toyGraphics.*
 //import com.anysolo.toyGraphics.vector.*
 import kotlin.math.*
 
@@ -16,6 +13,8 @@ class Editor(width: Int, height: Int) {
     private val board = PixelBoard(pixelBoardSize, min(width, height) / pixelBoardSize)
 
     fun execute() {
+        board.setPixel(10, 10, Pal16.blue)
+
         while(true) {
             Graphics(window).use { g ->
                 board.draw(g)
