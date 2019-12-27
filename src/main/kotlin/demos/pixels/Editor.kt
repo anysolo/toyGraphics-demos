@@ -82,7 +82,7 @@ class Editor(width: Int, height: Int) {
         g.drawText(left, top, "saved pos: $savedPos")
     }
 
-    fun processKeyboard() {
+    private fun processKeyboard() {
         while (true) {
             val key = keyboard.getPressedKey() ?: break
 
@@ -94,9 +94,28 @@ class Editor(width: Int, height: Int) {
                 'C'.toInt() ->  nextColor(!key.isAlt)
                 'D'.toInt() -> board[cursorPos] = currentColor
                 'P'.toInt() -> savedPos = cursorPos
+                'E'.toInt() -> board.clear()
+                'L'.toInt() -> drawLineOnBoard()
             }
 
             cursorPos = board.normalizePos(cursorPos)
+        }
+    }
+
+    private fun drawLineOnBoard() {
+        val distanceX = cursorPos.x - savedPos.x
+        val distanceY = cursorPos.y - savedPos.y
+
+        val amountOfIteration = max(abs(distanceX), abs(distanceY))
+
+        var x = savedPos.x.toDouble()
+        var y = savedPos.y.toDouble()
+
+        repeat(amountOfIteration) {
+            x += distanceX.toDouble() / amountOfIteration
+            y += distanceY.toDouble() / amountOfIteration
+
+            board[Pos(x.roundToInt(), y.roundToInt())] = currentColor
         }
     }
 }
