@@ -1,6 +1,8 @@
 package demos
 
 import com.anysolo.toyGraphics.*
+import com.anysolo.toyGraphics.events.EventManager
+import com.anysolo.toyGraphics.events.KeyboardEvent
 
 
 fun main() {
@@ -19,22 +21,24 @@ fun main() {
     var currentAnimation: Animation = jumpmanStanding
     currentAnimation.start(animationManager)
 
-    val keyboard = Keyboard(wnd, eventMode = true)
+    val eventManager = EventManager(wnd)
 
     while(true) {
         while(true) {
-            val kEvent = keyboard.getEvent() ?: break
+            val event = eventManager.takeEvent() ?: break
+            if(event !is KeyboardEvent)
+                continue
 
             var newAnimation: Animation? = null
 
-            if(kEvent.isPressed)
-                when(kEvent.code) {
+            if(event.isPressed)
+                when(event.code) {
                     KeyCodes.LEFT -> newAnimation = jumpmanRunningLeft
                     KeyCodes.RIGHT -> newAnimation = jumpmanRunningRight
                     KeyCodes.SPACE -> newAnimation = jumpmanJumping
                 }
             else
-                when(kEvent.code) {
+                when(event.code) {
                     KeyCodes.LEFT, KeyCodes.RIGHT, KeyCodes.SPACE -> newAnimation = jumpmanStanding
                 }
 
