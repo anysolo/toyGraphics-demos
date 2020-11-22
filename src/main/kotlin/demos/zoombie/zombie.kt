@@ -46,8 +46,6 @@ var blastAltitude = 0.0
 var score = 0.0
 
 
-val animationManager = AnimationManager()
-
 
 fun drawProjectile(gc: Graphics) {
     val x = projectileDistance
